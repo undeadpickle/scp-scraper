@@ -23,29 +23,45 @@ st.sidebar.write(f"URL to scrape: {url}")
 
 # Scrape the website when the button is clicked
 if st.sidebar.button("Scrape Website"):
-    try:
-        data = scrape_scp_website(url)
-        st.sidebar.success(f"Successfully scraped the website: {url}")
-        if data:
-            st.write("### SCP Articles found on the website:")
-            for entry in data:
-                st.write(entry)
+    with st.spinner("Scraping website..."):
+        try:
+            data = scrape_scp_website(url)
+            st.sidebar.success(f"Successfully scraped the website: {url}")
+            if data:
+                st.write("### SCP Articles found on the website:")
+                for entry in data:
+                    st.write(entry)
 
-            # Export to CSV option
-            df = pd.DataFrame(data, columns=["SCP Articles"])
-            csv = df.to_csv(index=False).encode("utf-8")
-            st.download_button(
-                label="Download data as CSV",
-                data=csv,
-                file_name="scp_articles.csv",
-                mime="text/csv",
-            )
-        else:
-            st.warning(
-                "No SCP articles found. Please check the URL or try a different page."
-            )
-    except Exception as e:
-        st.sidebar.error(f"Error: {e}")
+                # Export to CSV option
+                df = pd.DataFrame(data, columns=["SCP Articles"])
+                csv = df.to_csv(index=False).encode("utf-8")
+                st.download_button(
+                    label="Download data as CSV",
+                    data=csv,
+                    file_name="scp_articles.csv",
+                    mime="text/csv",
+                )
+
+                # Filter/Search functionality
+                st.write("### Search SCP Articles")
+                search_term = st.text_input("Enter a keyword to search:")
+                if search_term:
+                    search_results = [
+                        entry for entry in data if search_term.lower() in entry.lower()
+                    ]
+                    if search_results:
+                        st.write(f"### Search Results for '{search_term}':")
+                        for result in search_results:
+                            st.write(result)
+                    else:
+                        st.write(f"No results found for '{search_term}'.")
+
+            else:
+                st.warning(
+                    "No SCP articles found. Please check the URL or try a different page."
+                )
+        except Exception as e:
+            st.sidebar.error(f"Error: {e}")
 
 # Instructions
 st.write(
@@ -54,6 +70,7 @@ st.write(
 1. Select the SCP Series to scrape from the sidebar.
 2. Click the "Scrape Website" button to extract SCP articles.
 3. View the results below and optionally download the data as a CSV file.
+4. Use the search functionality to filter SCP articles by keyword.
 """
 )
 
